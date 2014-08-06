@@ -13,8 +13,304 @@
     <link rel="stylesheet" href="css/bootstrap.css">
     <meta name="viewport" content="width=device-width, initial-scale=1">
 </head>
-<body ng-app="CSUploader" ng-controller="ApplicationController">
+<body ng-app="ContactManagement" ng-controller="ApplicationController">
+    <center>
+        <div class="container row" ng-controller="ContactsController">
+            <div class="col-xs-12">
+                <div id="workspace-select" class="panel panel-default" style="text-align:left;">
+                    <div class="panel-body">
 
+                        <!-- header -->
+                        <div id="header" style="text-align:center;">
+                            <img src="img/logo.jpg" width="150" height="20"></img>
+                            <p class="text-primary" style="font-size:14px;">Contact Management</p>
+                        </div>
+                        <!-- end header -->
+
+                        <!-- nav buttons -->
+                        <table class="table" id="nav buttons" style="width:fill;text-align:center;">
+                            <tr>
+                                <td>
+                                    <a href="#" ng-click="init()">
+                                        <button class="btn btn-xs btn-default"
+                                            style="width:40px;height:30px;"  >
+                                            <span class="glyphicon glyphicon-list"></span>
+                                        </button>
+                                    </a>
+                                </td>
+                                <td>
+                                    <a href="#" ng-click="goTo(VIEW.addContact)">
+                                        <button class="btn btn-xs btn-warning"
+                                            style="width:40px;height:30px;" >
+                                            <span class="glyphicon glyphicon-user"></span>
+                                        </button>
+                                    </a>
+                                </td>
+                                <td>
+                                    <a href="#" ng-click="goTo(VIEW.upload)">
+                                        <button ng-disabled="currentView != VIEW.viewContact"
+                                            style="width:40px;height:30px;"   
+                                            class="btn btn-xs btn-success">
+                                            <span class="glyphicon glyphicon-cloud-upload"></span>
+                                        </button>
+                                    </a>
+                                </td>
+                                <td>
+                                    <a href="#" ng-click="delete(contact.id, $event)"> 
+                                        <button ng-disabled="currentView != VIEW.viewContact"
+                                            style="width:40px;height:30px;"  
+                                            class="btn btn-xs btn-danger">
+                                            <span class="glyphicon glyphicon-remove-circle"></span> 
+                                        </button> 
+                                    </a>
+                                </td>
+                            </tr>
+                        </table>
+                        <!-- end nav buttons -->
+
+                        <!-- contacts listing -->
+                        <div ng-show="currentView == VIEW.viewContacts">
+                            <input type="text" placeholder="search contacts" class="form-control" ng-model="searchText">
+                            <ul 
+                                ng-repeat="contact in contacts | filter:searchText" 
+                                class="nav nav-pills nav-stacked">
+                                <li style="overflow:hidden;" ng-class-odd="'bg-default'">
+                                    <a href="javascript:void(0);" ng-click="viewContact(contact.id)">
+                                        <span class="glyphicon glyphicon-user"></span> 
+                                        {{contact.name}}
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
+                        <!-- end contacts listing -->
+
+                        <!-- contact view -->
+                        <div ng-show="currentView == VIEW.viewContact">
+                            <div class="row">
+                                <div class="col-xs-12">
+                                    <h4><span style="color:#387cf6;">{{contact.firstName}} {{contact.lastName}}</span></h4>
+                                </div>
+                                <div class="col-xs-12" ng-show="contact.thumbnail">
+                                    <canvas class="thumbnail" id="canvas"></canvas>
+                                </div>
+                                <div class="col-xs-12">
+                                    <ul class="list-group">
+                                        <li class="list-group-item"><strong> Phone: </strong> {{contact.phone}}</li>
+                                        <li class="list-group-item" 
+                                            ng-show="currentPath.path().email != 'null' && currentPath.path().email != 'undefined'">
+                                            <strong > Email: </strong>{{contact.email}}
+                                        </li>
+                                        <a ng-click="viewFile(file.id)"
+                                            ng-repeat="file in contact.files" 
+                                            class="list-group-item" 
+                                            href="javascript:void(0);" >view {{file.name}}
+                                        </a>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- end contact view -->
+
+                        <!-- add contact view -->
+                        <div ng-show="currentView == VIEW.addContact">
+                            <h4> Add New Contact </h4>
+                            <div id="add-new-folder-form">
+                                <p ng-show="error" class="help-block">Contact already exists</p>
+                                <form
+                                    role="form" 
+                                    name="addContactForm" 
+                                    ng-submit="addContact(addContactForm.$valid, newcontact)"
+                                    novalidate>
+                                    <div class="form-group">
+                                        <label for="newfolder">First Name</label>
+                                        <br>
+                                        <input 
+                                            type="text" 
+                                            id="contact-first-name"
+                                            class="form-control pull-left"
+                                            style="width:inherit;"
+                                            ng-model="newcontact.firstName"
+                                            required/>
+                                        <br>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="newfolder">Last Name</label>
+                                        <br>
+                                        <input 
+                                            type="text" 
+                                            id="contact-last-name"
+                                            class="form-control pull-left"
+                                            style="width:inherit;"
+                                            ng-model="newcontact.lastName"
+                                            required/>
+                                        <br>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="newfolder">Phone</label>
+                                        <br>
+                                        <input 
+                                            type="number" 
+                                            id="contact-phone"
+                                            class="form-control pull-left"
+                                            style="width:inherit;"
+                                            ng-model="newcontact.phone"
+                                            required/>
+                                        <br>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="newfolder">Email</label>
+                                        <br>
+                                        <input 
+                                            type="email" 
+                                            id="contact-email"
+                                            class="form-control pull-left"
+                                            style="width:inherit;"
+                                            ng-model="newcontact.email"/>
+                                        <br>
+                                    </div>
+                                    <br>
+                                    <div class="form-group">
+                                        <label for="file">Add Photo</label>
+                                        <br>
+                                        <input 
+                                            type="file" 
+                                            id="contact-file"
+                                            class="pull-left"
+                                            ng-model="contact.src"/>
+                                        <br>
+                                        <p class="help-block">upload a photo for this contact</p>
+                                    </div>
+                                    <div class="form-group">
+                                        <button 
+                                        class="btn btn-primary form-control"
+                                        style="width:inherit;"
+                                        ng-disabled="addContactForm.$invalid">Add Contact
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                        <!-- end add contact -->
+
+                        <!-- upload view -->
+                        <div ng-show="currentView == VIEW.upload">
+                            <h4>Upload a file for <span style="color:387cf6;">{{contact.firstName}}</span></h4>
+                            <form
+                                role="form" 
+                                name="uploadForm" 
+                                ng-submit="uploadFile(uploadForm.$valid, newfile, contact.id)"
+                                novalidate>
+                                <div class="form-group">
+                                    <label for="file">Choose File</label>
+                                    <br>
+                                    <input 
+                                        type="file" 
+                                        id="file"
+                                        class="pull-left"
+                                        ng-model="newfile.src"
+                                        required/>
+                                    <br>
+                                    <p class="help-block">upload a file to be associated with this contact</p>
+                                </div>
+                                <div class="form-group">
+                                    <label for="newfolder">Name</label>
+                                    <br>
+                                    <input 
+                                        type="text" 
+                                        id="file-name"
+                                        class="form-control pull-left"
+                                        style="width:inherit;"
+                                        ng-model="newfile.name"
+                                        required/>
+                                    <br>
+                                </div>
+                                <br>
+                                <div class="form-group">
+                                    <label for="newfolder">Description</label>
+                                    <br>
+                                    <input 
+                                        type="text" 
+                                        id="file-description"
+                                        class="form-control pull-left"
+                                        style="width:inherit;"
+                                        ng-model="newfile.description"/>
+                                    <br>
+                                </div>
+                                <br>
+                                <div class="form-group">
+                                    <button 
+                                        class="btn btn-default form-control"
+                                        style="width:inherit;"
+                                        ng-show="uploadForm.$valid"
+                                        ng-click="back()">Cancel upload
+                                    </button>
+                                </div>
+                                <div class="form-group">
+                                    <button 
+                                        class="btn btn-success form-control"
+                                        style="width:inherit;"
+                                        ng-disabled="uploadForm.$invalid">Upload File
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                        <!-- end upload view -->
+
+                        <!-- file view -->
+                        <div ng-show="currentView == VIEW.viewFile">
+                            <div class="row">
+                                <div class="col-xs-12">
+                                    <h4>Viewing <span style="color:387cf6;">{{file.file_name}}</span></h4>
+                                </div>
+                                <div class="col-xs-12">
+                                    <p ng-show="file.description">
+                                        <strong>description: </strong> {{file.description}}
+                                    </p>
+                                    <p ng-show="file.file_type">
+                                        <strong>type: </strong> {{file.file_type}}
+                                    </p>
+                                    <p ng-show="file.file_size">
+                                        <strong>size: </strong> {{file.file_size | bytes}}
+                                    </p>
+                                    <p ng-show="file.create_date">
+                                        <strong>created: </strong> {{file.create_date | date: MMDDYYYY}}
+                                    </p>
+                                    <p ng-show="file.version_number">
+                                        <strong>version: </strong> {{file.version_number}}
+                                    </p>
+                                    <button 
+                                        ng-click="downloadFile(file.id, file.version_number, file.mime_type)"
+                                        class="btn btn-default btn-sm btn-block">
+                                        Download
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- end file view -->
+
+                        <!-- iframe for file download -->
+                        <iframe id="downloader" style="display:none;">
+                        </iframe>
+
+                    </div>
+                    <!-- end panel-body -->
+                </div>
+                <!-- end panel -->
+            </div>
+            <!-- end root row -->
+        </div>
+        <!-- end contacts controller -->
+    </center>
+
+    <!-- footer -->
+    <nav id="footer" class="navbar navbar-defult navbar-static-bottom" role="navigation">
+        <center><div class="container">
+            <p class="text-muted">&#169;<a href="http://www.opentext.com"> OpenText </a>2014</p>
+            <p class="text-muted"><a href="http://win-ora-test/alpha/livelink.exe"> Content Server Log In</a></p>
+            </div>
+        </center>
+    </nav>
+    <!-- end footer -->
 
 </body>
 </html>
